@@ -1,0 +1,24 @@
+#Seagrass Agent-Based Model
+
+#Conception
+    #Space - a 2D square grid. The edges don't wrap around.
+        #Traits
+            #agents_per_cell = each grid cell can contain 1 or 0 agents
+            #elevation = the elevation of the grid cell
+                #+ values indicate elevation above sea level
+                #- values indicate elevation below sea level
+                #0 indicates sea level elevation
+            #light_depth = the depth that light can reach
+        #States
+            #is_inhabited: is there a plant in the cell
+        #Interaction
+            #elevation feeds into light_depth calculation
+            # If a cell's elevation >= 0: light depth = 0
+        #Feedback
+            #I don't think so?
+    #Agents
+        #Loc_x: x-coordinate of the cell the plant occupies
+        #Loc_y: y-coordinate of the cell the plant occupies
+        #Max_daughter: maximum number of daughter plants a plant can make. Default is 1.
+        #Max_agents: Total maximum number of agents; cannot be more than the number of cells.
+            
