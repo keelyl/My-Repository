@@ -1,0 +1,93 @@
+Exercises using Python to run ArcGIS analyses #1
+The goal of this exersise is to calculate point density surfaces for each of 9 different variables (called attributes) within a 
+Food Outlet Points shapefile (foodpts.shp) using 4 different search radii (805 meters, 1609 meters, 4828 meters, and 8147 meters) for Grand 
+Rapids. Finally, zonal statistics tables are generated with ethe mean value for each surface summarized by census block group polygon.
+
+
+Python script:
+
+# Import modules
+import arcpy, os
+from arcpy import env
+from arcpy.sa import *
+
+# Set working environment
+env.workspace = "M:/gr/gr"
+
+# Check out necessary license in ArcGIS
+arcpy.CheckOutExtension("spatial")
+
+# Local variables:
+foodpts = "foodpts.shp"
+"""Destination file is set inside the loop"""
+
+# Attributes
+attributes = ["ram", "bak", "cat", "fas", "far", "fmk", "sup", "gro", "ebt"]
+radii = ["805", "1609", "4828", "8047"]
+
+# Create the point density surfac4es
+for i in attributes:
+    for j in radii:
+        dest_file_PD = i + "_" + j
+        var_string = "Circle " + j + " MAP"
+        bg2010 = "bg2010.shp"
+        arcpy.gp.PointDensity_sa(foodpts, i, dest_file_PD, "100", var_string, "SQUARE_METERS")
+        print i,j
+
+# Run Zonal Statistics on the point density surfaces just created
+for i in attributes:
+    for j in radii:
+        input_file_PD = i + "_" + j
+        dest_file_ZST = i + "_" + j + "_ZST.dbf"
+        bg2010 = "bg2010.shp"
+        arcpy.gp.ZonalStatisticsAsTable_sa(bg2010, "NAME", input_file_PD, dest_file_ZST, "DATA", "MEAN")
+
+print "Done!"
+
+----------------------------------
+----------------------------------
+----------------------------------
+
+Using Python for for ArcGIS #2.
+This program seeks to extract data and create 2 feature classes containing..
+1. The river basins within South Africa, and
+2. The river basins within and bordering South Africa.
+
+
+Python script:
+
+# Set environment
+env.workspace = r"D:\1_3.31.15\GIS_Spatial_Exploratory-2015-04-07\GIS_Spatial_Exploratory\SA_pythonWorkspace"
+
+# Set local variables
+global_dl_20140109_shp = "global_dl_20140109.shp"
+global_dl_20140109_lyr = "global_dl_20140109.lyr"
+basins_withinSA_shp = "basins_withinSA.shp"
+basins_includingSA_shp = "basins_includingSA.shp"
+
+# Set overwrite option
+arcpy.env.overwriteOutput = True
+
+# EXECUTE STEPS
+
+# Make Feature Layer
+arcpy.MakeFeatureLayer_management(in_features = global_dl_20140109_shp,
+                                  out_layer = global_dl_20140109_lyr)
+
+# Select from Layer by Attribute
+arcpy.SelectLayerByAttribute_management(in_layer_or_view = global_dl_20140109_lyr, selection_type = "NEW_SELECTION",
+                                        where_clause = "\"COUNTRY\" = 'South Africa'")
+
+# Copy Selection to New Feature Class
+arcpy.CopyFeatures_management(in_features = global_dl_20140109_lyr,
+                              out_feature_class = basins_withinSA_shp)
+
+# Select from Layer by Location (add to previous selection)
+arcpy.SelectLayerByLocation_management(in_layer = global_dl_20140109_lyr,
+                                       overlap_type = "BOUNDARY_TOUCHES",
+                                       select_features = basins_withinSA_shp,
+                                       selection_type = "ADD_TO_SELECTION")
+
+# Copy Selection to New Feature Class
+arcpy.CopyFeatures_management(in_features = global_dl_20140109_lyr,
+                              out_feature_class = basins_includingSA_shp)
